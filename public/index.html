@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>200290069 URL Shortener!</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>200290069 URL Shortener :)</h1>
+    </header>
+    <main id="app">
+        <form @submit.prevent="createUrl()">
+            <label for="url">Url</label>
+            <input name="url" id="url" v-model="url">
+
+            <label for="slug">Slug?</label>
+            <input name="slug" id="slug" v-model="slug">
+
+            <button type="submit">Create</button>
+        </form>
+        
+
+    </main>
+    <script src="https://unpkg.com/vue@2.6.11/dist/vue.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
