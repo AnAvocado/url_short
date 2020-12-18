@@ -1,36 +1,33 @@
 const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const helmet = require('helmet');
-const yup = require('yup');
 const monk = require('monk');
-const { nanoid}  = require('nanoid');
+const yup = require('yup');
+const { nanoid }  = require('nanoid');
 require('dotenv').config();
 
 
+//Create DB using Monk.
 const db = monk(process.env.DB_URI);
-const url_short = db.get('url_short');
+//Creating collection variable
+const url_short = db.get('short_url');
+//Making sure we target the index by name
 url_short.createIndex({ slug: 1}, { unique: true });
+
+
 const app = express();
 
 
-app.use(helmet());
-app.use(morgan('tiny'))
-app.use(cors());
 app.use(express.json());
 app.use(express.static('../public'))
 
 
-//Yup is great because it has built in functions that do validations like http and etc.
+//Very quick Schema Using YUP
 const schema = yup.object().shape({
     slug: yup.string().trim().matches(/[\w\-]/i),
     url: yup.string().trim().url().required(),
 
 })
 
-app.get('/url/:id', (req, res) => {
-
-})
+//When we get a URL with an ID, we check the DB to see if we have that stored, if we do. We redirect to the URL. if not we tell the user it isnt found
 app.get('/:id', async (req, res, next) => {
     const { id: slug } = req.params;
     try {
@@ -44,14 +41,16 @@ app.get('/:id', async (req, res, next) => {
     }
 })
 
-app.post('/url', async (req, res, next) =>{
-    let { slug, url} = req.body;
 
+//Creating a new short URL through the VUE method of CreateUrl()
+app.post('/url', async (req, res, next) =>{
+    let { slug, url } = req.body;
     try {
         await schema.validate({
             slug,
-            url,
+            url
         })
+        //If no 'custom' slug, we make a random 6 digit one for the user.
         if(!slug){
             slug = nanoid(6);
         }else {
@@ -63,7 +62,7 @@ app.post('/url', async (req, res, next) =>{
         slug = slug.toLowerCase();
         const newUrl = {
             url,
-            slug,
+            slug
         };
         const created = await url_short.insert(newUrl);
         res.json(created);
@@ -72,6 +71,7 @@ app.post('/url', async (req, res, next) =>{
     }
 });
 
+//Error reports.
 app.use((error, req, res, next) => {
     if(error.status) {
         res.status(error.status)
@@ -84,6 +84,8 @@ app.use((error, req, res, next) => {
     })
 })
 
+
+//Port information.
 const port = process.env.PORT || 4000;
 app.listen(port,() => {
     console.log(`listen at port ${port}`)
